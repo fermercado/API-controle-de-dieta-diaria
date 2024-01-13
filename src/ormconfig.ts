@@ -1,11 +1,14 @@
-import { ConnectionOptions } from 'typeorm';
+import { DataSource } from 'typeorm';
+import { User } from './entities/User';
 
-const config: ConnectionOptions = {
+const databaseUrl = process.env.DATABASE_URL || 'fallback-database.sqlite';
+
+export const AppDataSource = new DataSource({
   type: 'sqlite',
-  database: './database.sqlite',
-  entities: ['src/entities/**/*.ts'],
+  database: databaseUrl,
+  entities: [User],
   synchronize: true,
   logging: false,
-};
+});
 
-export default config;
+export default AppDataSource;
