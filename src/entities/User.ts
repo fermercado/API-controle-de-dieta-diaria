@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Meal } from './Meal';
 import bcrypt from 'bcryptjs';
 
 @Entity()
@@ -17,6 +18,9 @@ export class User {
 
   @Column({ type: 'text' })
   password!: string;
+
+  @OneToMany(() => Meal, (meal) => meal.user)
+  meals!: Meal[];
 
   async validatePassword(unencryptedPassword: string): Promise<boolean> {
     return bcrypt.compare(unencryptedPassword, this.password);
