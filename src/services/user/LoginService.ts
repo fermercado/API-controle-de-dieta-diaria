@@ -20,7 +20,7 @@ export class LoginService {
     password: string,
   ): Promise<LoginResponse | Error> {
     try {
-      const user = await this.userRepository.findOne({ where: { email } });
+      const user = await this.userRepository.findOneBy({ email });
 
       if (!user || !(await bcrypt.compare(password, user.password))) {
         return new Error('Incorrect email or password.');
