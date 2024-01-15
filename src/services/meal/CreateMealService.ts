@@ -4,7 +4,7 @@ import { Meal } from '../../entities/Meal';
 interface IRequest {
   name: string;
   description: string;
-  dateTime: Date;
+  dateTime: string;
   isDiet: boolean;
 }
 
@@ -15,10 +15,15 @@ export class CreateMealService {
   ): Promise<Meal> {
     const mealRepository = AppDataSource.getRepository(Meal);
 
+    const convertedDateTime = new Date(dateTime);
+    if (isNaN(convertedDateTime.getTime())) {
+      throw new Error('Invalid date format.');
+    }
+
     const meal = mealRepository.create({
       name,
       description,
-      dateTime,
+      dateTime: convertedDateTime,
       isDiet,
       user: { id: userId },
     });
