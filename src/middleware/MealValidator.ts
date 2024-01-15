@@ -28,6 +28,32 @@ class MealValidator {
   validateCreateMeal(data: any) {
     return this.createMealSchema.parse(data);
   }
+  private updateMealSchema = z.object({
+    name: z
+      .string()
+      .max(50)
+      .optional()
+      .refine((val) => val === undefined || val.trim().length > 0, {
+        message: 'Name cannot be just white spaces.',
+      }),
+    description: z
+      .string()
+      .max(100)
+      .optional()
+      .refine((val) => val === undefined || val.trim().length > 0, {
+        message: 'Description cannot be just white spaces.',
+      }),
+    dateTime: z
+      .string()
+      .refine((val) => val === undefined || !isNaN(Date.parse(val)), {
+        message: 'Invalid date format.',
+      })
+      .optional(),
+    isDiet: z.boolean().optional(),
+  });
+  validateUpdateMeal(data: any) {
+    return this.updateMealSchema.parse(data);
+  }
 }
 
 export default new MealValidator();
