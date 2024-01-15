@@ -13,4 +13,15 @@ export class MealRepository {
     await this.repository.save(meal);
     return meal;
   }
+
+  async updateMeal(id: number, mealData: Partial<Meal>): Promise<Meal | null> {
+    let meal = await this.repository.findOneBy({ id });
+    if (!meal) {
+      return null;
+    }
+
+    meal = this.repository.merge(meal, mealData);
+    await this.repository.save(meal);
+    return meal;
+  }
 }
