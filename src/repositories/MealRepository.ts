@@ -41,7 +41,14 @@ export class MealRepository {
     return true;
   }
 
-  async findMealsByUser(userId: number): Promise<Meal[]> {
+  async GetUserMeal(userId: number): Promise<Meal[]> {
     return this.repository.find({ where: { user: { id: userId } } });
+  }
+
+  async GetMeal(arg: {
+    id: number;
+    user: { id: number };
+  }): Promise<Meal | null> {
+    return await this.repository.findOneBy(arg);
   }
 }
