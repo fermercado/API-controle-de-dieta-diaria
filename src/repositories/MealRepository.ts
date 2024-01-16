@@ -2,8 +2,8 @@ import { DataSource, Repository } from 'typeorm';
 import { Meal } from '../entities/Meal';
 
 export class MealRepository {
-  findOneBy(arg0: { id: number; user: { id: number; }; }) {
-      throw new Error('Method not implemented.');
+  findOneBy(arg0: { id: number; user: { id: number } }) {
+    throw new Error('Method not implemented.');
   }
   private repository: Repository<Meal>;
 
@@ -39,5 +39,9 @@ export class MealRepository {
 
     await this.repository.remove(meal);
     return true;
+  }
+
+  async findMealsByUser(userId: number): Promise<Meal[]> {
+    return this.repository.find({ where: { user: { id: userId } } });
   }
 }
