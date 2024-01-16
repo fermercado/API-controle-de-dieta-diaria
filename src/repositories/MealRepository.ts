@@ -1,11 +1,14 @@
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Meal } from '../entities/Meal';
 
 export class MealRepository {
+  findOneBy(arg0: { id: number; user: { id: number; }; }) {
+      throw new Error('Method not implemented.');
+  }
   private repository: Repository<Meal>;
 
-  constructor(repository: Repository<Meal>) {
-    this.repository = repository;
+  constructor(dataSource: DataSource) {
+    this.repository = dataSource.getRepository(Meal);
   }
 
   async createMeal(mealData: Partial<Meal>): Promise<Meal> {
@@ -23,5 +26,18 @@ export class MealRepository {
     meal = this.repository.merge(meal, mealData);
     await this.repository.save(meal);
     return meal;
+  }
+
+  async deleteMeal(mealId: number, userId: number): Promise<boolean> {
+    const meal = await this.repository.findOneBy({
+      id: mealId,
+      user: { id: userId },
+    });
+    if (!meal) {
+      return false;
+    }
+
+    await this.repository.remove(meal);
+    return true;
   }
 }
