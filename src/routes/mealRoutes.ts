@@ -3,6 +3,7 @@ import { CreateMealController } from '../controllers/meal/CreateMeal';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { UpdateMealController } from '../controllers/meal/UpdateMeal';
 import { DeleteMealController } from '../controllers/meal/DeleteMeal';
+import { GetUserMealsController } from '../controllers/meal/GetUserMeal';
 
 const router = express.Router();
 
@@ -18,6 +19,11 @@ router.put('/meals/:id', authMiddleware, (req, res) => {
 
 router.delete('/meals/:id', authMiddleware, (req, res) => {
   const controller = new DeleteMealController();
+  controller.handle(req, res);
+});
+
+router.get('/meals', authMiddleware, (req, res) => {
+  const controller = new GetUserMealsController();
   controller.handle(req, res);
 });
 
