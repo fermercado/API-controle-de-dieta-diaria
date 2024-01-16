@@ -2,6 +2,7 @@ import { AppDataSource } from '../../ormconfig';
 import { User } from '../../entities/User';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { UserRepository } from '../../repositories/UserRepository';
 
 type LoginResponse = {
   token: string;
@@ -13,14 +14,14 @@ type LoginResponse = {
 };
 
 export class LoginService {
-  private userRepository = AppDataSource.getRepository(User);
+  private userRepository = new UserRepository(AppDataSource);
 
   async validateUser(
     email: string,
     password: string,
   ): Promise<LoginResponse | Error> {
     try {
-      const user = await this.userRepository.findOneBy({ email });
+      const user = await this.userRepository.findByEmail(email);
 
       if (!user || !(await bcrypt.compare(password, user.password))) {
         return new Error('Incorrect email or password.');
