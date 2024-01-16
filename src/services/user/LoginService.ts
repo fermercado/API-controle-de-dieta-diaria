@@ -1,5 +1,4 @@
 import { AppDataSource } from '../../ormconfig';
-import { User } from '../../entities/User';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { UserRepository } from '../../repositories/UserRepository';
