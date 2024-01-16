@@ -1,19 +1,14 @@
+import { MealRepository } from '../../repositories/MealRepository';
 import { AppDataSource } from '../../ormconfig';
-import { Meal } from '../../entities/Meal';
 
 export class DeleteMealService {
-  async execute(mealId: number, userId: number): Promise<Meal> {
-    const mealRepository = AppDataSource.getRepository(Meal);
-    const meal = await mealRepository.findOneBy({
-      id: mealId,
-      user: { id: userId },
-    });
+  private mealRepository: MealRepository;
 
-    if (!meal) {
-      throw new Error('Meal not found or not owned by user.');
-    }
+  constructor() {
+    this.mealRepository = new MealRepository(AppDataSource);
+  }
 
-    await mealRepository.remove(meal);
-    return meal;
+  async execute(mealId: number, userId: number): Promise<boolean> {
+    return this.mealRepository.deleteMeal(mealId, userId);
   }
 }

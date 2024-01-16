@@ -1,5 +1,7 @@
-import { AppDataSource } from '../../ormconfig';
+import { MealRepository } from '../../repositories/MealRepository';
+import { UserRepository } from '../../repositories/UserRepository';
 import { Meal } from '../../entities/Meal';
+import { AppDataSource } from '../../ormconfig';
 
 interface IRequest {
   name: string;
@@ -9,27 +11,29 @@ interface IRequest {
 }
 
 export class CreateMealService {
+  private mealRepository: MealRepository;
+  private userRepository: UserRepository;
+
+  constructor() {
+    this.mealRepository = new MealRepository(AppDataSource);
+    this.userRepository = new UserRepository(AppDataSource);
+  }
+
   async execute(
     { name, description, dateTime, isDiet }: IRequest,
     userId: number,
   ): Promise<Meal> {
-    const mealRepository = AppDataSource.getRepository(Meal);
-
-    const convertedDateTime = new Date(dateTime);
-    if (isNaN(convertedDateTime.getTime())) {
-      throw new Error('Invalid date format.');
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) {
+      throw new Error('User not found.');
     }
 
-    const meal = mealRepository.create({
+    return this.mealRepository.createMeal({
       name,
       description,
-      dateTime: convertedDateTime,
+      dateTime: new Date(dateTime),
       isDiet,
-      user: { id: userId },
+      user,
     });
-
-    await mealRepository.save(meal);
-
-    return meal;
   }
 }

@@ -1,3 +1,5 @@
+import { MealRepository } from '../../repositories/MealRepository';
+import { UserRepository } from '../../repositories/UserRepository';
 import { AppDataSource } from '../../ormconfig';
 import { Meal } from '../../entities/Meal';
 
@@ -10,30 +12,32 @@ interface IRequest {
 }
 
 export class UpdateMealService {
+  private mealRepository: MealRepository;
+  private userRepository: UserRepository;
+
+  constructor() {
+    this.mealRepository = new MealRepository(AppDataSource);
+    this.userRepository = new UserRepository(AppDataSource);
+  }
+
   async execute(
     { id, name, description, dateTime, isDiet }: IRequest,
     userId: number,
   ): Promise<Meal | null> {
-    const mealRepository = AppDataSource.getRepository(Meal);
-
-    const meal = await mealRepository.findOneBy({ id, user: { id: userId } });
-    if (!meal) {
-      throw new Error('Meal not found.');
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) {
+      throw new Error('User not found.');
     }
 
-    if (name !== undefined) meal.name = name;
-    if (description !== undefined) meal.description = description;
-    if (dateTime !== undefined) {
-      const convertedDateTime = new Date(dateTime);
-      if (isNaN(convertedDateTime.getTime())) {
-        throw new Error('Invalid date format.');
-      }
-      meal.dateTime = convertedDateTime;
-    }
-    if (isDiet !== undefined) meal.isDiet = isDiet;
+    const updatedMealData: Partial<Meal> = {};
+    if (name !== undefined) updatedMealData.name = name;
+    if (description !== undefined) updatedMealData.description = description;
+    if (dateTime !== undefined) updatedMealData.dateTime = new Date(dateTime);
+    if (isDiet !== undefined) updatedMealData.isDiet = isDiet;
 
-    await mealRepository.save(meal);
-
-    return meal;
+    return this.mealRepository.updateMeal(id, {
+      ...updatedMealData,
+      user,
+    });
   }
 }
