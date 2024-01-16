@@ -10,6 +10,6 @@ export class GetUserMealsService {
   }
 
   async execute(userId: number): Promise<Meal[]> {
-    return this.mealRepository.findMealsByUser(userId);
+    return this.mealRepository.GetUserMeal(userId);
   }
 }
