@@ -21,6 +21,8 @@
     "jsonwebtoken": "^9.0.2",
     "reflect-metadata": "^0.2.1",
     "sqlite3": "^5.1.7",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0",
     "typeorm": "^0.3.19",
     "zod": "^3.22.4"
   },
@@ -30,6 +32,8 @@
     "@types/jest": "^29.5.11",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20.11.0",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.6",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",
