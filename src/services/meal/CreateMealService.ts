@@ -1,6 +1,5 @@
 import { MealRepository } from '../../repositories/MealRepository';
 import { UserRepository } from '../../repositories/UserRepository';
-import { Meal } from '../../entities/Meal';
 import { AppDataSource } from '../../ormconfig';
 
 interface IRequest {
@@ -8,6 +7,17 @@ interface IRequest {
   description: string;
   dateTime: string;
   isDiet: boolean;
+}
+
+interface MealResponse {
+  id: number;
+  name: string;
+  description: string;
+  dateTime: Date;
+  isDiet: boolean;
+  user: {
+    id: number;
+  };
 }
 
 export class CreateMealService {
@@ -22,18 +32,29 @@ export class CreateMealService {
   async execute(
     { name, description, dateTime, isDiet }: IRequest,
     userId: number,
-  ): Promise<Meal> {
+  ): Promise<MealResponse> {
     const user = await this.userRepository.findOneBy({ id: userId });
     if (!user) {
       throw new Error('User not found.');
     }
 
-    return this.mealRepository.createMeal({
+    const meal = await this.mealRepository.createMeal({
       name,
       description,
       dateTime: new Date(dateTime),
       isDiet,
       user,
     });
+
+    return {
+      id: meal.id,
+      name: meal.name,
+      description: meal.description,
+      dateTime: meal.dateTime,
+      isDiet: meal.isDiet,
+      user: {
+        id: user.id,
+      },
+    };
   }
 }
