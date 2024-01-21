@@ -4,6 +4,7 @@ import { authMiddleware } from '../middleware/authMiddleware';
 import { UpdateMealController } from '../controllers/meal/UpdateMeal';
 import { DeleteMealController } from '../controllers/meal/DeleteMeal';
 import { GetUserMealsController } from '../controllers/meal/GetUserMeal';
+import { GetUserMealsService } from '../services/meal/GetUserMealsService';
 import { GetMealController } from '../controllers/meal/GetMeal';
 
 const router = express.Router();
@@ -24,7 +25,8 @@ router.delete('/meals/:id', authMiddleware, (req, res) => {
 });
 
 router.get('/meals', authMiddleware, (req, res) => {
-  const controller = new GetUserMealsController();
+  const getUserMealsService = new GetUserMealsService();
+  const controller = new GetUserMealsController(getUserMealsService);
   controller.handle(req, res);
 });
 
