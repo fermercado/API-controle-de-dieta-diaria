@@ -2,12 +2,21 @@ import { Request, Response } from 'express';
 import { UpdateMealService } from '../../services/meal/UpdateMealService';
 import MealValidator from '../../middleware/MealValidator';
 import { z } from 'zod';
+import { UserRepository } from '../../repositories/UserRepository';
+import { MealRepository } from '../../repositories/MealRepository';
+import AppDataSource from '../../ormconfig';
 
 export class UpdateMealController {
   private updateMealService: UpdateMealService;
 
   constructor() {
-    this.updateMealService = new UpdateMealService();
+    const userRepository = new UserRepository(AppDataSource);
+    const mealRepository = new MealRepository(AppDataSource);
+
+    this.updateMealService = new UpdateMealService(
+      userRepository,
+      mealRepository,
+    );
   }
 
   async handle(request: Request, response: Response): Promise<Response> {
