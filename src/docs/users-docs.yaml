@@ -135,18 +135,18 @@ components:
       properties:
         firstName:
           type: string
-          example: Jane
+          example: Maria
         lastName:
           type: string
-          example: Doe
+          example: Silva
         email:
           type: string
           format: email
-          example: jane.doe@example.com
+          example: maria.silva@example.com
         password:
           type: string
           format: password
-          example: securePassword123
+          example: Password123
       required:
         - firstName
         - lastName
@@ -162,13 +162,13 @@ components:
         email:
           type: string
           format: email
-          example: jane.doe@example.com
+          example: maria.silva@example.com
         firstName:
           type: string
-          example: Jane
+          example: Maria
         lastName:
           type: string
-          example: Doe
+          example: Silva
 
     LoginRequest:
       type: object
@@ -196,14 +196,14 @@ components:
           properties:
             firstName:
               type: string
-              example: John
+              example: João
             lastName:
               type: string
-              example: Doe
+              example: Silva
             email:
               type: string
               format: email
-              example: user@example.com
+              example: joao@example.com
 
     CreateMealRequest:
       type: object
