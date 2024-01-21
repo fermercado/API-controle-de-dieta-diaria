@@ -147,11 +147,16 @@ components:
           type: string
           format: password
           example: Password123
+        confirmPassword:
+          type: string
+          format: password
+          example: Password123
       required:
         - firstName
         - lastName
         - email
         - password
+        - confirmPassword
 
     UserResponse:
       type: object
