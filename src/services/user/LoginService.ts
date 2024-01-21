@@ -39,7 +39,6 @@ export class LoginService {
         },
       };
     } catch (error) {
-      console.error(error);
       return new Error('Error validating user.');
     }
   }
