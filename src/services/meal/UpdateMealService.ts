@@ -11,6 +11,12 @@ interface IRequest {
 }
 
 export class UpdateMealService {
+  static execute(updatedMealData: { id: number; name: string; description: string; dateTime: string; isDiet: boolean; }, userId: number) {
+    throw new Error('Method not implemented.');
+  }
+  notImplementedMethod() {
+    throw new Error('Method not implemented.');
+  }
   private mealRepository: MealRepository;
   private userRepository: UserRepository;
 
