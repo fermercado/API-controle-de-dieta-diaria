@@ -1,6 +1,5 @@
 import { MealRepository } from '../../repositories/MealRepository';
 import { UserRepository } from '../../repositories/UserRepository';
-import { AppDataSource } from '../../ormconfig';
 import { Meal } from '../../entities/Meal';
 
 interface IRequest {
@@ -15,9 +14,9 @@ export class UpdateMealService {
   private mealRepository: MealRepository;
   private userRepository: UserRepository;
 
-  constructor() {
-    this.mealRepository = new MealRepository(AppDataSource);
-    this.userRepository = new UserRepository(AppDataSource);
+  constructor(userRepository: UserRepository, mealRepository: MealRepository) {
+    this.userRepository = userRepository;
+    this.mealRepository = mealRepository;
   }
 
   async execute(
@@ -37,7 +36,6 @@ export class UpdateMealService {
 
     return this.mealRepository.updateMeal(id, {
       ...updatedMealData,
-      user,
     });
   }
 }
