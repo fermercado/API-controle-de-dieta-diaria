@@ -1,6 +1,9 @@
 import { z } from 'zod';
 
 class MealValidator {
+  private timeWithMillisecondsRegex =
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})/;
+
   private createMealSchema = z.object({
     name: z
       .string()
@@ -10,7 +13,7 @@ class MealValidator {
       }),
     description: z
       .string()
-      .max(100, 'Description must be at most 100 characters.')
+      .max(50, 'Description must be at most 50 characters.')
       .refine((val) => val.trim().length > 0, {
         message: 'Description cannot be just white spaces.',
       }),
@@ -20,8 +23,10 @@ class MealValidator {
         return false;
       }
       const dateString = date.toISOString().split('T')[0];
-      return dateString === val.split('T')[0];
-    }, 'Invalid date format.'),
+      const isValidDate = dateString === val.split('T')[0];
+      const includesMilliseconds = this.timeWithMillisecondsRegex.test(val);
+      return isValidDate && includesMilliseconds;
+    }, 'Invalid date format. Expected format: YYYY-MM-DDTHH:MM:SS.sss'),
     isDiet: z.boolean(),
   });
   prototype: any;
@@ -39,18 +44,24 @@ class MealValidator {
       }),
     description: z
       .string()
-      .max(100)
+      .max(50)
       .optional()
       .refine((val) => val === undefined || val.trim().length > 0, {
         message: 'Description cannot be just white spaces.',
       }),
     dateTime: z
       .string()
-      .refine((val) => val === undefined || !isNaN(Date.parse(val)), {
-        message: 'Invalid date format.',
-      })
+      .refine((val) => {
+        const date = new Date(val);
+        if (isNaN(date.getTime())) {
+          return false;
+        }
+        const dateString = date.toISOString().split('T')[0];
+        const isValidDate = dateString === val.split('T')[0];
+        const includesMilliseconds = this.timeWithMillisecondsRegex.test(val);
+        return isValidDate && includesMilliseconds;
+      }, 'Invalid date format. Expected format: YYYY-MM-DDTHH:MM:SS.sss')
       .optional(),
-    isDiet: z.boolean().optional(),
   });
   validateUpdateMeal(data: any) {
     return this.updateMealSchema.parse(data);
