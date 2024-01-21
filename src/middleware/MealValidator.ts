@@ -24,6 +24,7 @@ class MealValidator {
     }, 'Invalid date format.'),
     isDiet: z.boolean(),
   });
+  prototype: any;
 
   validateCreateMeal(data: any) {
     return this.createMealSchema.parse(data);
