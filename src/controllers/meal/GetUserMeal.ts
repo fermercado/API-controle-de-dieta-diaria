@@ -4,8 +4,8 @@ import { GetUserMealsService } from '../../services/meal/GetUserMealsService';
 export class GetUserMealsController {
   private getUserMealsService: GetUserMealsService;
 
-  constructor() {
-    this.getUserMealsService = new GetUserMealsService();
+  constructor(getUserMealsService: GetUserMealsService) {
+    this.getUserMealsService = getUserMealsService;
   }
 
   async handle(request: Request, response: Response): Promise<Response> {
