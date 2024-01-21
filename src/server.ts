@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import 'reflect-metadata';
 import { AppDataSource } from './ormconfig';
 import { createApp } from './app';
