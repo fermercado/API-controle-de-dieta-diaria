@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-class UserValidator {
+export class UserValidator {
   private createUserSchema = z.object({
     firstName: z
       .string()
@@ -24,6 +24,7 @@ class UserValidator {
     email: z.string().email('Invalid email.'),
     password: z.string(),
   });
+    prototype: any;
 
   validateCreateUser(data: any) {
     return this.createUserSchema.parse(data);
