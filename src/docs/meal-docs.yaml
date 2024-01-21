@@ -64,14 +64,11 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
+                $ref: "#/components/schemas/UnauthorizedError"
               examples:
-                emailExists:
+                unauthorized:
                   value:
-                    message: "Unauthorized."
+                    message: "Unauthorized"
         "409":
           description: Conflict (e.g., email already exists)
           content:
@@ -86,18 +83,15 @@ paths:
                   value:
                     message: "Email already exists."
         "500":
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              examples:
-                internalError:
-                  value:
-                    message: "Internal server error"
+            description: Internal Server Error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/InternalError"
+                examples:
+                  internalError:
+                    value:
+                      message: "Internal Server Error"
   /meals/{id}:
     put:
       tags:
@@ -393,6 +387,19 @@ components:
         isDiet:
           type: boolean
           example: false
+
+    UnauthorizedError:
+      type: object
+      properties:
+        message:
+          type: string
+
+    InternalError:
+      type: object
+      properties:
+        message:
+          type: string   
+               
   securitySchemes:
     BearerAuth:
       type: http
