@@ -59,7 +59,6 @@ export class CreateService {
 
       return userResponse;
     } catch (error) {
-      console.error(error);
       return new Error('Error creating user.');
     }
   }
