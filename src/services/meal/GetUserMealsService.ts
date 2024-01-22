@@ -1,6 +1,5 @@
-import { AppDataSource } from '../../ormconfig';
 import { MealRepository } from '../../repositories/MealRepository';
-import { Meal } from '../../entities/Meal';
+import { AppDataSource } from '../../ormconfig';
 
 export class GetUserMealsService {
   private mealRepository: MealRepository;
@@ -9,7 +8,13 @@ export class GetUserMealsService {
     this.mealRepository = new MealRepository(AppDataSource);
   }
 
-  async execute(userId: number): Promise<Meal[]> {
-    return this.mealRepository.GetUserMeal(userId);
+  async execute(userId: number): Promise<any> {
+    const meals = await this.mealRepository.GetUserMeal(userId);
+
+    if (meals.length === 0) {
+      return { message: 'No meals found for this user.' };
+    }
+
+    return meals;
   }
 }
