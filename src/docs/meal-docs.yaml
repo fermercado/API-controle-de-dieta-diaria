@@ -19,14 +19,14 @@ paths:
               properties:
                 name:
                   type: string
-                  example: "Lunch"
+                  example: "string"
                 description:
                   type: string
-                  example: "Healthy lunch meal"
+                  example: "string"
                 dateTime:
                   type: string
                   format: date-time
-                  example: "2024-01-17T12:00:00Z"
+                  example: "2024-01-17T12:00:00.000Z"
                 isDiet:
                   type: boolean
                   example: true
@@ -116,14 +116,14 @@ paths:
               properties:
                 name:
                   type: string
-                  example: "Updated Lunch"
+                  example: "string"
                 description:
                   type: string
-                  example: "Updated description of the healthy lunch meal"
+                  example: "string"
                 dateTime:
                   type: string
                   format: date-time
-                  example: "2024-01-17T14:00:00Z"
+                  example: "2024-01-17T14:00:00.000Z"
                 isDiet:
                   type: boolean
                   example: false
@@ -383,7 +383,7 @@ components:
         dateTime:
           type: string
           format: date-time
-          example: "2024-01-17T12:00:00Z"
+          example: "2024-01-17T12:00:00.000Z"
         isDiet:
           type: boolean
           example: false
