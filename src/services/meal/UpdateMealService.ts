@@ -11,12 +11,6 @@ interface IRequest {
 }
 
 export class UpdateMealService {
-  static execute(updatedMealData: { id: number; name: string; description: string; dateTime: string; isDiet: boolean; }, userId: number) {
-    throw new Error('Method not implemented.');
-  }
-  notImplementedMethod() {
-    throw new Error('Method not implemented.');
-  }
   private mealRepository: MealRepository;
   private userRepository: UserRepository;
 
@@ -29,9 +23,12 @@ export class UpdateMealService {
     { id, name, description, dateTime, isDiet }: IRequest,
     userId: number,
   ): Promise<Meal | null> {
-    const user = await this.userRepository.findOneBy({ id: userId });
-    if (!user) {
-      throw new Error('User not found.');
+    const meal = await this.mealRepository.findOneBy(id, userId);
+    if (!meal) {
+      throw new Error('Meal not found.');
+    }
+    if (meal.user && meal.user.id !== userId) {
+      throw new Error('Unauthorized to update this meal.');
     }
 
     const updatedMealData: Partial<Meal> = {};
@@ -40,8 +37,6 @@ export class UpdateMealService {
     if (dateTime !== undefined) updatedMealData.dateTime = new Date(dateTime);
     if (isDiet !== undefined) updatedMealData.isDiet = isDiet;
 
-    return this.mealRepository.updateMeal(id, {
-      ...updatedMealData,
-    });
+    return this.mealRepository.updateMeal(id, updatedMealData);
   }
 }
