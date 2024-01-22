@@ -21,7 +21,15 @@ interface MealResponse {
 }
 
 export class CreateMealService {
-  static execute(mealInput: { name: string; description: string; dateTime: string; isDiet: boolean; }, userId: number) {
+  static execute(
+    mealInput: {
+      name: string;
+      description: string;
+      dateTime: string;
+      isDiet: boolean;
+    },
+    userId: number,
+  ) {
     throw new Error('Method not implemented.');
   }
   private mealRepository: MealRepository;
