@@ -3,6 +3,7 @@ import { Meal } from '../entities/Meal';
 
 export class MealRepository {
   private repository: Repository<Meal>;
+  findOne: any;
 
   constructor(dataSource: DataSource) {
     this.repository = dataSource.getRepository(Meal);
@@ -42,12 +43,12 @@ export class MealRepository {
     return this.repository.find({ where: { user: { id: userId } } });
   }
 
-  async findOneBy(arg: {
-    id: number;
-    user: { id: number };
-  }): Promise<Meal | null> {
+  async findOneBy(mealId: number, userId: number): Promise<Meal | null> {
     return await this.repository.findOne({
-      where: arg,
+      where: {
+        id: mealId,
+        user: { id: userId },
+      },
     });
   }
 }
