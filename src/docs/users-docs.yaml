@@ -135,18 +135,18 @@ components:
       properties:
         firstName:
           type: string
-          example: Maria
+          example: String
         lastName:
           type: string
-          example: Silva
+          example: String
         email:
           type: string
           format: email
-          example: maria.silva@example.com
+          example: user@example.com
         password:
           type: string
           format: password
-          example: Password123
+          example: string
         confirmPassword:
           type: string
           format: password
@@ -219,8 +219,8 @@ components:
           description: Name of the meal (up to 50 characters).
         description:
           type: string
-          maxLength: 100
-          description: Description of the meal (up to 100 characters).
+          maxLength: 50
+          description: Description of the meal (up to 50 characters).
         dateTime:
           type: string
           format: date-time
