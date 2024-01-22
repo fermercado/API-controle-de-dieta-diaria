@@ -13,6 +13,7 @@ jest.mock('../../repositories/UserRepository', () => ({
 
 jest.mock('../../repositories/MealRepository', () => ({
   MealRepository: jest.fn().mockImplementation(() => ({
+    findOneBy: jest.fn(),
     updateMeal: jest.fn(),
   })),
 }));
@@ -22,17 +23,21 @@ describe('UpdateMealService', () => {
   let mockUserRepository: jest.Mocked<UserRepository>;
   let mockMealRepository: jest.Mocked<MealRepository>;
 
-  const mockUser = new User();
-  mockUser.id = 30;
-  mockUser.firstName = 'João';
-  mockUser.lastName = 'Silva';
-  mockUser.email = 'joao@example.com';
-  mockUser.password = 'hashed_password';
-  mockUser.validatePassword = jest.fn().mockResolvedValue(true);
-  mockUser.meals = [];
+  const userId = 1;
+  const mealId = 1;
+  let mockUser: User;
+  let mockMeal: Meal;
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    mockUser = new User();
+    mockUser.id = userId;
+
+    mockMeal = new Meal();
+    mockMeal.id = mealId;
+    mockMeal.user = mockUser;
+
     mockUserRepository = new UserRepository(
       {} as DataSource,
     ) as jest.Mocked<UserRepository>;
@@ -46,13 +51,11 @@ describe('UpdateMealService', () => {
     );
 
     mockUserRepository.findOneBy.mockResolvedValue(mockUser);
+    mockMealRepository.findOneBy.mockResolvedValue(mockMeal);
   });
 
   it('should update a meal successfully when the user is the creator', async () => {
-    const userId = 30;
-    const mealId = 100;
     const updatedMealData = {
-      id: mealId,
       name: 'Updated Lunch',
       description: 'Even more delicious',
       dateTime: '2024-01-17T14:00:00.000Z',
@@ -60,66 +63,59 @@ describe('UpdateMealService', () => {
     };
 
     const updatedMeal = new Meal();
-    updatedMeal.id = mealId;
-    updatedMeal.name = 'Updated Lunch';
-    updatedMeal.description = 'Even more delicious';
-    updatedMeal.dateTime = new Date('2024-01-17T14:00:00.000Z');
-    updatedMeal.isDiet = false;
-    updatedMeal.user = mockUser;
+
+    updatedMeal.dateTime = new Date(updatedMealData.dateTime);
 
     mockMealRepository.updateMeal.mockResolvedValue(updatedMeal);
 
-    const result = await updateMealService.execute(updatedMealData, userId);
+    const result = await updateMealService.execute(
+      { id: mealId, ...updatedMealData },
+      userId,
+    );
 
     expect(result).toEqual(updatedMeal);
     expect(mockMealRepository.updateMeal).toHaveBeenCalledWith(
       mealId,
       expect.objectContaining({
-        name: 'Updated Lunch',
-        description: 'Even more delicious',
+        ...updatedMealData,
         dateTime: expect.any(Date),
-        isDiet: false,
       }),
     );
   });
 
   it('should not update a meal if the user is not the creator', async () => {
-    const nonCreatorUserId = 31;
-    const mealId = 100;
+    const nonCreatorUserId = 2;
+
+    const updatedMealData = {
+      id: mealId,
+      name: 'Attempted Update Lunch',
+      description: 'Attempted Update Description',
+      dateTime: '2024-01-18T14:00:00.000Z',
+      isDiet: false,
+    };
+
     mockUserRepository.findOneBy.mockResolvedValue(null);
 
     await expect(
-      updateMealService.execute(
-        {
-          id: mealId,
-          name: 'Attempted Update Lunch',
-          description: 'Attempted Update Description',
-          dateTime: '2024-01-18T14:00:00.000Z',
-          isDiet: false,
-        },
-        nonCreatorUserId,
-      ),
-    ).rejects.toThrow('User not found.');
+      updateMealService.execute(updatedMealData, nonCreatorUserId),
+    ).rejects.toThrow('Unauthorized to update this meal.');
   });
-
-  it('should throw an error when the static execute method is called', () => {
+  it('should throw an error if the meal is not found', async () => {
+    const mealId = 1;
+    const userId = 1;
     const updatedMealData = {
-      id: 1,
-      name: 'Test Meal',
-      description: 'Test Description',
-      dateTime: '2024-01-17T14:00:033Z',
+      name: 'Updated Lunch',
+      description: 'Even more delicious',
+      dateTime: '2024-01-17T14:00:00.000Z',
       isDiet: false,
     };
-    const userId = 1;
 
-    expect(() => {
-      UpdateMealService.execute(updatedMealData, userId);
-    }).toThrow('Method not implemented.');
-  });
+    mockMealRepository.findOneBy.mockResolvedValue(null);
 
-  it('should throw an error for not implemented method', () => {
-    expect(() => {
-      updateMealService.notImplementedMethod();
-    }).toThrow('Method not implemented.');
+    await expect(
+      updateMealService.execute({ id: mealId, ...updatedMealData }, userId),
+    ).rejects.toThrow('Meal not found.');
+
+    expect(mockMealRepository.findOneBy).toHaveBeenCalledWith(mealId, userId);
   });
 });
