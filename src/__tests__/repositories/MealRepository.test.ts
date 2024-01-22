@@ -97,9 +97,10 @@ describe('MealRepository', () => {
   });
 
   describe('deleteMeal', () => {
-    it('should delete a meal', async () => {
+    it('should return true if meal is found and deleted', async () => {
       const meal = { id: 1, user: { id: 1 } } as Meal;
       mockRepository.findOneBy.mockResolvedValue(meal);
+      mockRepository.remove.mockResolvedValue(meal);
 
       const result = await mealRepository.deleteMeal(1, 1);
 
@@ -108,7 +109,7 @@ describe('MealRepository', () => {
         user: { id: 1 },
       });
       expect(mockRepository.remove).toHaveBeenCalledWith(meal);
-      expect(result).toBe(true);
+      expect(result).toBeTruthy();
     });
   });
 
@@ -156,13 +157,19 @@ describe('MealRepository', () => {
   });
   describe('findOneBy', () => {
     it('should call repository findOne with correct arguments', async () => {
-      const arg = { id: 1, user: { id: 1 } };
-      mockRepository.findOne.mockResolvedValue(null);
+      const mealId = 1;
+      const userId = 1;
+      const meal = { id: mealId, user: { id: userId } } as Meal;
+      mockRepository.findOne.mockResolvedValue(meal);
 
-      const result = await mealRepository.findOneBy(arg);
+      await mealRepository.findOneBy(mealId, userId);
 
-      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: arg });
-      expect(result).toBeNull();
+      expect(mockRepository.findOne).toHaveBeenCalledWith({
+        where: {
+          id: mealId,
+          user: { id: userId },
+        },
+      });
     });
   });
 });
