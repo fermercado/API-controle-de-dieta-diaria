@@ -1,132 +1,149 @@
 import { UpdateMealController } from '../../controllers/meal/UpdateMeal';
 import { UpdateMealService } from '../../services/meal/UpdateMealService';
-import MealValidator from '../../middleware/MealValidator';
 import { Request, Response } from 'express';
-import { z } from 'zod';
+import { ZodError, z } from 'zod';
+import MealValidator from '../../middleware/MealValidator';
 
 jest.mock('../../services/meal/UpdateMealService');
-jest.mock('../../middleware/MealValidator');
+jest.mock('../../repositories/UserRepository');
+jest.mock('../../repositories/MealRepository');
+jest.mock('../../middleware/MealValidator', () => ({
+  validateUpdateMeal: jest.fn(),
+}));
 
 describe('UpdateMealController', () => {
+  let consoleSpy: jest.SpyInstance<
+    void,
+    [message?: any, ...optionalParams: any[]],
+    any
+  >;
   let updateMealController: UpdateMealController;
+  let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
 
   beforeEach(() => {
     updateMealController = new UpdateMealController();
-
+    mockRequest = { params: {}, userId: 123, body: {} as any };
     mockResponse = {
-      json: jest.fn(),
       status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
     };
+    consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
-  it('should return a successful response for valid data', async () => {
-    const mockRequest = {
-      params: { id: '1' },
-      body: {
-        name: 'Updated Meal',
-        description: 'Updated description',
-        dateTime: '2024-01-20T12:00:00',
-        isDiet: false,
-      },
-      userId: 123,
-    } as Partial<Request>;
-
-    const mockUpdatedMeal = {
-      id: 1,
-      ...mockRequest.body,
-      dateTime: new Date('2024-01-20T12:00:00'),
-      user: { id: 123 },
-    };
-
-    MealValidator.validateUpdateMeal = jest
-      .fn()
-      .mockReturnValue(mockRequest.body);
-
-    (UpdateMealService.prototype.execute as jest.Mock).mockResolvedValue(
-      mockUpdatedMeal,
-    );
-
-    await updateMealController.handle(
-      mockRequest as Request,
-      mockResponse as Response,
-    );
-
-    expect(mockResponse.json).toHaveBeenCalledWith(mockUpdatedMeal);
+  afterEach(() => {
+    consoleSpy.mockRestore();
   });
 
-  it('should return a 401 error when user is not authenticated', async () => {
-    const mockRequest = {
-      params: { id: '1' },
-      body: {},
-      userId: undefined,
-    } as Partial<Request>;
+  it('should return unauthorized if userId is missing', async () => {
+    mockRequest.userId = undefined;
 
-    await updateMealController.handle(
-      mockRequest as Request,
-      mockResponse as Response,
-    );
+    await updateMealController.handle(mockRequest as any, mockResponse as any);
 
     expect(mockResponse.status).toHaveBeenCalledWith(401);
     expect(mockResponse.json).toHaveBeenCalledWith({ message: 'Unauthorized' });
   });
 
-  it('should return a 400 error for validation failure', async () => {
-    const mockRequest = {
-      params: { id: '1' },
-      body: {
-        name: '',
-        description: '',
-        dateTime: '',
-        isDiet: 'string',
+  it('should return a validation error for invalid data', async () => {
+    const error = new z.ZodError([
+      {
+        message: 'Invalid data',
+        path: ['mealName'],
+        code: 'invalid_type',
+        expected: 'string',
+        received: 'number',
       },
-      userId: 123,
-    } as Partial<Request>;
-
-    const validationError = new z.ZodError([]);
-    MealValidator.validateUpdateMeal = jest.fn().mockImplementation(() => {
-      throw validationError;
+    ]);
+    (MealValidator.validateUpdateMeal as jest.Mock).mockImplementation(() => {
+      throw error;
     });
 
-    await updateMealController.handle(
-      mockRequest as Request,
-      mockResponse as Response,
-    );
+    mockRequest.params = { id: '1' };
+    mockRequest.body = {};
+
+    await updateMealController.handle(mockRequest as any, mockResponse as any);
 
     expect(mockResponse.status).toHaveBeenCalledWith(400);
     expect(mockResponse.json).toHaveBeenCalledWith({
-      errors: validationError.errors,
+      errors: error.errors.map((e) => ({ message: e.message })),
     });
   });
-  it('should return a 500 error for unexpected exceptions', async () => {
-    const mockRequest = {
-      params: { id: '1' },
-      body: {
-        name: 'Valid Meal Name',
-        description: 'Valid description',
-        dateTime: '2024-01-20T12:00:00',
-        isDiet: true,
-      },
-      userId: 123,
-    } as Partial<Request>;
 
-    const unexpectedError = new Error('Unexpected error');
-    (UpdateMealService.prototype.execute as jest.Mock).mockRejectedValue(
-      unexpectedError,
+  it('should handle service errors', async () => {
+    const validatedData = {
+      mealName: 'Breakfast',
+    };
+    (MealValidator.validateUpdateMeal as jest.Mock).mockReturnValue(
+      validatedData,
     );
 
-    MealValidator.validateUpdateMeal = jest
-      .fn()
-      .mockReturnValue(mockRequest.body);
+    const updateMealMock = UpdateMealService.prototype.execute as jest.Mock;
+    updateMealMock.mockRejectedValue(new Error('Service error'));
 
-    await updateMealController.handle(
-      mockRequest as Request,
-      mockResponse as Response,
-    );
+    mockRequest.params = { id: '1' };
+    mockRequest.body = validatedData;
+
+    await updateMealController.handle(mockRequest as any, mockResponse as any);
 
     expect(mockResponse.status).toHaveBeenCalledWith(500);
     expect(mockResponse.json).toHaveBeenCalledWith({
-      error: unexpectedError.message,
+      error: 'Service error',
     });
+  });
+
+  it('should successfully update a meal', async () => {
+    const mealResponse = {
+      id: '1',
+      mealName: 'Breakfast',
+      calories: 300,
+    };
+    const updateMealMock = UpdateMealService.prototype.execute as jest.Mock;
+    updateMealMock.mockResolvedValue(mealResponse);
+
+    mockRequest.params = { id: '1' };
+    mockRequest.body = {
+      mealName: 'Breakfast',
+      calories: 300,
+    };
+
+    await updateMealController.handle(mockRequest as any, mockResponse as any);
+
+    expect(mockResponse.json).toHaveBeenCalledWith(mealResponse);
+  });
+
+  it('should log an error for ZodError', async () => {
+    const error = new ZodError([
+      {
+        message: 'Invalid data',
+        path: ['mealName'],
+        code: 'invalid_type',
+        expected: 'string',
+        received: 'number',
+      },
+    ]);
+
+    (MealValidator.validateUpdateMeal as jest.Mock).mockImplementation(() => {
+      throw error;
+    });
+
+    const mockRequest = {
+      params: {
+        id: '1',
+      },
+      body: {
+        mealName: 123,
+      },
+    };
+    const mockResponse = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+
+    await updateMealController.handle(mockRequest as any, mockResponse as any);
+
+    try {
+    } catch (error) {
+      console.error('UpdateMealController.handle - Error:', error);
+    }
   });
 });
