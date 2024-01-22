@@ -10,9 +10,6 @@ export class GetMealService {
   }
 
   async execute(mealId: number, userId: number): Promise<Meal | null> {
-    return await this.mealRepository.findOneBy({
-      id: mealId,
-      user: { id: userId },
-    });
+    return await this.mealRepository.findOneBy(mealId, userId);
   }
 }
