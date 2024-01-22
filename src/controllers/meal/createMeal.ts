@@ -28,7 +28,8 @@ export class CreateMealController {
       return response.json(meal);
     } catch (error: any) {
       if (error instanceof z.ZodError) {
-        return response.status(400).json({ errors: error.errors });
+        const errorMessages = error.errors.map((e) => ({ message: e.message }));
+        return response.status(400).json({ errors: errorMessages });
       }
       return response.status(500).json({ error: error.message });
     }
