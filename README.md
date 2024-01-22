@@ -87,6 +87,16 @@ Depois de construir o projeto com `npm run build`, você pode iniciar o servidor
 npm start
 ```
 
+## 📃 Documentação da API com Swagger
+
+A documentação completa da API está disponível e pode ser acessada via Swagger UI. Isso permite que você visualize e interaja com a API's endpoints diretamente através do navegador.
+
+Para acessar a documentação Swagger e testar os endpoints:
+
+```bash
+http://localhost:3000/api-docs/
+```
+
 ## 📡 Rotas da API
 
 ### 👥 Usuários
@@ -122,7 +132,6 @@ npm start
   ```
 
   ### 🥗 Refeições
-
 
 #### ➕ Adicionar Refeição
 
@@ -173,6 +182,5 @@ npm start
 - **Descrição**: Remove uma refeição específica.
 
 ## 💖 Agradecimentos
-Gostaríamos de expressar nossa gratidão a todos que contribuíram para este projeto, seja por meio de código, sugestões ou feedback.
----
 
+## Gostaríamos de expressar nossa gratidão a todos que contribuíram para este projeto, seja por meio de código, sugestões ou feedback.
