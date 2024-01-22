@@ -10,10 +10,7 @@ export class DeleteMealService {
   }
 
   async execute(mealId: number, userId: number): Promise<Meal | null> {
-    const meal = await this.mealRepository.findOneBy({
-      id: mealId,
-      user: { id: userId },
-    });
+    const meal = await this.mealRepository.findOneBy(mealId, userId);
 
     if (!meal) {
       throw new Error('Meal not found or not authorized to delete this meal.');
