@@ -27,7 +27,10 @@ class MealValidator {
       const includesMilliseconds = this.timeWithMillisecondsRegex.test(val);
       return isValidDate && includesMilliseconds;
     }, 'Invalid date format. Expected format: YYYY-MM-DDTHH:MM:SS.sss'),
-    isDiet: z.boolean(),
+    isDiet: z.boolean({
+      required_error: 'isDiet is required',
+      invalid_type_error: 'isDiet must be a boolean',
+    }),
   });
   prototype: any;
 
@@ -37,14 +40,14 @@ class MealValidator {
   private updateMealSchema = z.object({
     name: z
       .string()
-      .max(50)
+      .max(50, 'Description must be at most 50 characters')
       .optional()
       .refine((val) => val === undefined || val.trim().length > 0, {
         message: 'Name cannot be just white spaces.',
       }),
     description: z
       .string()
-      .max(50)
+      .max(50, 'Description must be at most 50 characters')
       .optional()
       .refine((val) => val === undefined || val.trim().length > 0, {
         message: 'Description cannot be just white spaces.',
@@ -61,6 +64,12 @@ class MealValidator {
         const includesMilliseconds = this.timeWithMillisecondsRegex.test(val);
         return isValidDate && includesMilliseconds;
       }, 'Invalid date format. Expected format: YYYY-MM-DDTHH:MM:SS.sss')
+      .optional(),
+    isDiet: z
+      .boolean({
+        required_error: 'isDiet is required',
+        invalid_type_error: 'isDiet must be a boolean',
+      })
       .optional(),
   });
   validateUpdateMeal(data: any) {
