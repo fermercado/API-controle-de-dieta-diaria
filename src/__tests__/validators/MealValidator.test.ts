@@ -16,6 +16,7 @@ describe('MealValidator', () => {
         name: 'Updated Salad',
         description: 'Updated mix of vegetables',
         dateTime: '2024-01-21T12:00:54.033Z',
+        isDiet: true,
       };
       expect(() =>
         MealValidator.validateUpdateMeal(validUpdateMeal),

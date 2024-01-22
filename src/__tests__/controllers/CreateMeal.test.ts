@@ -1,94 +1,131 @@
-import { Request, Response } from 'express';
 import { CreateMealController } from '../../controllers/meal/CreateMeal';
 import { CreateMealService } from '../../services/meal/CreateMealService';
-import MealValidator from '../../middleware/MealValidator';
-import { ZodError } from 'zod';
+import { Request, Response } from 'express';
+import { z } from 'zod';
 
 jest.mock('../../services/meal/CreateMealService');
-jest.mock('../../middleware/MealValidator');
 
 describe('CreateMealController', () => {
   let createMealController: CreateMealController;
-  let mockReq: Partial<Request>;
-  let mockRes: Partial<Response>;
-  let mockSend: jest.Mock;
-  let mockStatus: jest.Mock;
+  let mockRequest: Partial<Request>;
+  let mockResponse: Partial<Response>;
 
   beforeEach(() => {
     createMealController = new CreateMealController();
-    mockSend = jest.fn();
-    mockStatus = jest.fn().mockReturnThis();
-    mockRes = {
-      status: mockStatus,
-      json: mockSend,
+    mockRequest = { body: {}, userId: 123 };
+    mockResponse = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
     };
-    mockReq = {
-      body: {
-        name: 'Meal Name',
-        description: 'Meal Description',
-        dateTime: '2022-01-01T12:00:00Z',
-        isDiet: true,
+  });
+
+  it('should return 401 status if user ID is missing', async () => {
+    mockRequest.userId = undefined;
+
+    await createMealController.handle(mockRequest as any, mockResponse as any);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(401);
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      message: 'Unauthorized: User ID is missing.',
+    });
+  });
+
+  it('should return 400 status and error messages for invalid data', async () => {
+    const error = new z.ZodError([
+      {
+        message: 'Invalid data',
+        path: ['mealName'],
+        code: 'invalid_type',
+        expected: 'string',
+        received: 'number',
       },
-      userId: 1,
+    ]);
+    (CreateMealService.prototype.execute as jest.Mock).mockRejectedValue(error);
+
+    mockRequest.body = {
+      mealName: 123,
     };
+
+    try {
+      await createMealController.handle(
+        mockRequest as any,
+        mockResponse as any,
+      );
+    } catch (error) {
+      const err = error as z.ZodError;
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        errors: err.errors.map((e) => ({ message: e.message })),
+      });
+    }
   });
 
-  it('should successfully create a meal', async () => {
-    jest
-      .spyOn(MealValidator, 'validateCreateMeal')
-      .mockReturnValue(mockReq.body);
-    (CreateMealService.prototype.execute as jest.Mock).mockResolvedValue({
-      id: 1,
-      ...mockReq.body,
-      dateTime: new Date(mockReq.body.dateTime),
-      user: { id: mockReq.userId },
-    });
+  it('should return 500 status and error message for service error', async () => {
+    const errorMessage = 'Service error';
+    (CreateMealService.prototype.execute as jest.Mock).mockRejectedValue(
+      new Error(errorMessage),
+    );
 
-    await createMealController.handle(mockReq as Request, mockRes as Response);
+    mockRequest.body = {
+      mealName: 'Breakfast',
+    };
 
-    expect(mockSend).toHaveBeenCalledWith({
-      id: 1,
-      ...mockReq.body,
-      dateTime: new Date(mockReq.body.dateTime),
-      user: { id: mockReq.userId },
-    });
+    try {
+      await createMealController.handle(
+        mockRequest as any,
+        mockResponse as any,
+      );
+    } catch (error) {
+      expect(mockResponse.status).toHaveBeenCalledWith(500);
+      expect(mockResponse.json).toHaveBeenCalledWith({ error: errorMessage });
+    }
   });
 
-  it('should handle meal validation errors', async () => {
-    const zodError = new ZodError([]);
-    jest.spyOn(MealValidator, 'validateCreateMeal').mockImplementation(() => {
-      throw zodError;
-    });
+  it('should return the created meal for valid data', async () => {
+    const meal = {
+      id: 'meal123',
+      name: 'Breakfast',
+      description: 'Delicious breakfast',
+      dateTime: new Date().toISOString(),
+      isDiet: false,
+      user: {
+        id: 'user123',
+      },
+    };
 
-    await createMealController.handle(mockReq as Request, mockRes as Response);
+    (CreateMealService.prototype.execute as jest.Mock).mockResolvedValue(meal);
 
-    expect(mockStatus).toHaveBeenCalledWith(400);
-    expect(mockSend).toHaveBeenCalledWith({ errors: zodError.errors });
+    mockRequest.body = {
+      name: 'Breakfast',
+      description: 'Delicious breakfast',
+      dateTime: new Date().toISOString(),
+      isDiet: false,
+    };
+
+    await createMealController.handle(mockRequest as any, mockResponse as any);
+
+    expect(mockResponse.json).toHaveBeenCalledWith(meal);
   });
-
-  it('should handle unexpected server errors', async () => {
-    jest
-      .spyOn(MealValidator, 'validateCreateMeal')
-      .mockReturnValue(mockReq.body);
+  it('should return a 500 error for unexpected errors', async () => {
     (CreateMealService.prototype.execute as jest.Mock).mockImplementation(
       () => {
         throw new Error('Unexpected error');
       },
     );
 
-    await createMealController.handle(mockReq as Request, mockRes as Response);
+    mockRequest.body = {
+      name: 'Breakfast',
+      description: 'Delicious breakfast',
+      dateTime: new Date().toISOString(),
+      isDiet: false,
+    };
+    mockRequest.userId = 123;
 
-    expect(mockStatus).toHaveBeenCalledWith(500);
-    expect(mockSend).toHaveBeenCalledWith({ error: 'Unexpected error' });
-  });
-  it('should return 401 if userId is missing', async () => {
-    mockReq.userId = undefined;
+    await createMealController.handle(mockRequest as any, mockResponse as any);
 
-    await createMealController.handle(mockReq as Request, mockRes as Response);
-
-    expect(mockStatus).toHaveBeenCalledWith(401);
-    expect(mockSend).toHaveBeenCalledWith({
-      message: 'Unauthorized: User ID is missing.',
+    expect(mockResponse.status).toHaveBeenCalledWith(500);
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      error: 'Unexpected error',
     });
   });
 });

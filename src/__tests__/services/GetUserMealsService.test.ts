@@ -70,4 +70,17 @@ describe('GetUserMealsService', () => {
       where: { user: { id: userId } },
     });
   });
+  it('should return a message if no meals are found for a given user', async () => {
+    mockMealRepository.find.mockResolvedValue([]);
+
+    const userId = 1;
+
+    const result = await getUserMealsService.execute(userId);
+
+    expect(result).toEqual({ message: 'No meals found for this user.' });
+
+    expect(mockMealRepository.find).toHaveBeenCalledWith({
+      where: { user: { id: userId } },
+    });
+  });
 });
