@@ -1,0 +1,407 @@
+paths:
+  /meals:
+    post:
+      tags:
+        - Meal
+      summary: Create a new meal
+      description: Allows authenticated users to create a new meal.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - description
+                - dateTime
+                - isDiet
+              properties:
+                name:
+                  type: string
+                  example: "string"
+                description:
+                  type: string
+                  example: "string"
+                dateTime:
+                  type: string
+                  format: date-time
+                  example: "2024-01-17T12:00:00.000Z"
+                isDiet:
+                  type: boolean
+                  example: true
+      responses:
+        "201":
+          description: Meal successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MealResponse"
+        "400":
+          description: Bad request (validation error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                        message:
+                          type: string
+              examples:
+                invalidFormat:
+                  value:
+                    errors:
+                      - field: "email"
+                        message: "Invalid email format."
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+              examples:
+                unauthorized:
+                  value:
+                    message: "Unauthorized"
+        "409":
+          description: Conflict (e.g., email already exists)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              examples:
+                emailExists:
+                  value:
+                    message: "Email already exists."
+        "500":
+            description: Internal Server Error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/InternalError"
+                examples:
+                  internalError:
+                    value:
+                      message: "Internal Server Error"
+  /meals/{id}:
+    put:
+      tags:
+        - Meal
+      summary: Update an existing meal
+      description: Allows authenticated users to update an existing meal by its ID.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Unique identifier of the meal to be updated
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "string"
+                description:
+                  type: string
+                  example: "string"
+                dateTime:
+                  type: string
+                  format: date-time
+                  example: "2024-01-17T14:00:00.000Z"
+                isDiet:
+                  type: boolean
+                  example: false
+      responses:
+        "200":
+          description: Meal successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meal" 
+        "400":
+          description: Bad request (validation error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                        message:
+                          type: string
+              examples:
+                invalidFormat:
+                  value:
+                    errors:
+                      - field: "dateTime"
+                        message: "Invalid date format."
+        "401":
+          description: Unauthorized (missing or invalid JWT token)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              examples:
+                missingToken:
+                  value:
+                    message: "Unauthorized"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              examples:
+                internalError:
+                  value:
+                    error: "Internal server error"
+/meals:
+  get:
+    tags:
+      - Meal
+    summary: Retrieve meals for a user
+    description: Allows authenticated users to retrieve all their meals.
+    security:
+      - BearerAuth: []
+    responses:
+      "200":
+        description: List of meals successfully retrieved
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/Meal"
+      "401":
+        description: Unauthorized (missing or invalid JWT token)
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+            examples:
+              missingToken:
+                value:
+                  message: "Unauthorized"
+      "500":
+        description: Internal Server Error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+            examples:
+              internalError:
+                value:
+                  error: "Internal server error"
+/meals/{id}:
+  get:
+    tags:
+      - Meal
+    summary: Retrieve a specific meal
+    description: Allows authenticated users to retrieve details of a specific meal by its ID.
+    security:
+      - BearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        description: Unique identifier of the meal
+    responses:
+      "200":
+        description: Meal successfully retrieved
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Meal" 
+      "401":
+        description: Unauthorized (missing or invalid JWT token)
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+            examples:
+              missingToken:
+                value:
+                  message: "Unauthorized"
+      "404":
+        description: Meal not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+            examples:
+              notFound:
+                value:
+                  message: "Meal not found"
+      "500":
+        description: Internal Server Error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+            examples:
+              internalError:
+                value:
+                  error: "Internal server error"
+
+  delete:
+    tags:
+      - Meal
+    summary: Delete a specific meal
+    description: Allows authenticated users to delete a specific meal by its ID.
+    security:
+      - BearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        description: Unique identifier of the meal to be deleted
+    responses:
+      "200":
+        description: Meal successfully deleted
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                meal:
+                  $ref: "#/components/schemas/Meal" 
+      "401":
+        description: Unauthorized (missing or invalid JWT token)
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+            examples:
+              missingToken:
+                value:
+                  message: "Unauthorized"
+      "500":
+        description: Internal Server Error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+            examples:
+              internalError:
+                value:
+                  error: "Internal server error"
+
+components:
+  schemas:
+    MealResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 30
+        name:
+          type: string
+          example: "Lunch"
+        description:
+          type: string
+          example: "Healthy lunch meal"
+        dateTime:
+          type: string
+          format: date-time
+          example: "2024-01-17T16:02:13.445Z"
+        isDiet:
+          type: boolean
+          example: true
+        user:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 20
+    Meal:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "Lunch"
+        description:
+          type: string
+          example: "A healthy lunch meal"
+        dateTime:
+          type: string
+          format: date-time
+          example: "2024-01-17T12:00:00.000Z"
+        isDiet:
+          type: boolean
+          example: false
+
+    UnauthorizedError:
+      type: object
+      properties:
+        message:
+          type: string
+
+    InternalError:
+      type: object
+      properties:
+        message:
+          type: string   
+               
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
